@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Bookify.Web.Core.Models;
-
-namespace Bookify.Web.Core.Mapping
+﻿namespace Bookify.Web.Core.Mapping
 {
     public class MappingProfile : Profile
     {
@@ -10,6 +7,10 @@ namespace Bookify.Web.Core.Mapping
             //Category
             CreateMap<Category, CategoryViewModel>();
             CreateMap<CategoryFormViewModel, Category>().ReverseMap();
+
+            //Author
+            CreateMap<Author, AuthorViewModel>();
+            CreateMap<AuthorFormViewModel,Author>().ReverseMap();
         }
     }
 }

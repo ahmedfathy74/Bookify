@@ -14,7 +14,6 @@
         [HttpGet]
         public IActionResult Index()
         {
-            //TODO: use viewModel
             var categories = _context.Categories.AsNoTracking().ToList();
 
             var viewModel = _mapper.Map<IEnumerable<CategoryViewModel>>(categories);

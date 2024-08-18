@@ -11,6 +11,7 @@ namespace Bookify.Web.Data
         {
         }
 
+        public DbSet<Author> Authors { get; set; }
         public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
