@@ -1,21 +1,27 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
+
+/* Start Override theme */
+.form-floating > .form-select {
+    padding-bottom: 0.225rem;
+}
+/* End Override theme */
 
 /* Start Override Bootbox */
 
