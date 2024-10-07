@@ -40,6 +40,22 @@ namespace Bookify.Web.Controllers
             return View();
         }
 
+        public IActionResult Details(int id)
+        {
+            var book = _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category)
+                .SingleOrDefault(b => b.Id == id);
+
+            if(book is null)
+                return NotFound();
+
+            var viewModel  = _mapper.Map<BookViewModel>(book);
+
+            return View(viewModel);
+        }
+
         public IActionResult Create() 
         { 
             return View("Form" , PopulateViewModel());
@@ -83,7 +99,7 @@ namespace Bookify.Web.Controllers
                 await model.Image.CopyToAsync(stream);
                 stream.Dispose();
 
-                book.ImageUrl = $"/images/books{imageName}";
+                book.ImageUrl = $"/images/books/{imageName}";
                 book.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
 
                 using var image = Image.Load(model.Image.OpenReadStream());
@@ -115,7 +131,7 @@ namespace Bookify.Web.Controllers
             _context.Add(book);
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id  = book.Id});
 
         }
 
@@ -190,7 +206,7 @@ namespace Bookify.Web.Controllers
                 await model.Image.CopyToAsync(stream);
                 stream.Dispose();
 
-                model.ImageUrl = $"/images/books{imageName}";
+                model.ImageUrl = $"/images/books/{imageName}";
                 model.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
 
                 using var image = Image.Load(model.Image.OpenReadStream());
@@ -216,8 +232,11 @@ namespace Bookify.Web.Controllers
             }
 
             else if (!string.IsNullOrEmpty(book.ImageUrl))
+            {
                 model.ImageUrl = book.ImageUrl;
-
+                model.ImageThumbnailUrl = book.ImageThumbnailUrl;
+            }
+            
             book = _mapper.Map(model, book);
             book.LastUpdatedOn = DateTime.Now;
             /* cloudinary */
@@ -229,7 +248,7 @@ namespace Bookify.Web.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id  = book.Id});
         }
 
         public IActionResult AllowItem(BookFormViewModel model)
