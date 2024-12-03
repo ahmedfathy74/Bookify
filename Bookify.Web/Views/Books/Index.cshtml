@@ -58,7 +58,8 @@
                         <th>Publisher</th>
                         <th>Publishing Date</th>
                         <th>Hall</th>
-                        <th>Categories</th>
+                        @*                            <th>Categories</th>
+                        *@
                         <th>Rental</th>
                         <th>Status</th>
                         <th class="text-end">Action</th>
@@ -76,11 +77,11 @@
 
 
 @section Plugins
-{
+    {
     <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
 }
 
 @section Scripts
-{
+    {
     <script src="~/js/books.js" asp-append-version="true"></script>
 }

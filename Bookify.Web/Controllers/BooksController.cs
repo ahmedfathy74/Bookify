@@ -10,6 +10,7 @@ using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class BooksController : Controller
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -161,6 +162,8 @@ namespace Bookify.Web.Controllers
                 //book.ImagePublicId = result.PublicId;
             }
 
+            book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
 
@@ -193,7 +196,10 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
-            var book = _context.Books.Include(b => b.Categories).SingleOrDefault(b => b.Id == model.Id);
+            var book = _context.Books
+                .Include(b => b.Categories)
+                .Include(b => b.Copies)
+                .SingleOrDefault(b => b.Id == model.Id);
 
             if (book is null)
                 return NotFound();
@@ -274,6 +280,7 @@ namespace Bookify.Web.Controllers
             }
             
             book = _mapper.Map(model, book);
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             book.LastUpdatedOn = DateTime.Now;
             /* cloudinary */
             //book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);
@@ -281,6 +288,10 @@ namespace Bookify.Web.Controllers
 
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
+
+            if(!model.IsAvailableForRental)
+                foreach(var copy in book.Copies)
+                    copy.IsAvailableForRental = false;
 
             _context.SaveChanges();
 
@@ -297,6 +308,7 @@ namespace Bookify.Web.Controllers
                 return NotFound();
 
             book.IsDeleted = !book.IsDeleted;
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             book.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();

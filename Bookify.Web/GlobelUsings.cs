@@ -8,3 +8,5 @@ global using Bookify.Web.Filters;
 global using Bookify.Web.Settings;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Authorization;
+global using System.Security.Claims;
