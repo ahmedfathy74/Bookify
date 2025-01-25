@@ -62,6 +62,7 @@ namespace Bookify.Web.Core.Mapping
                 .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.Area!.Name))
                 .ForMember(dest => dest.Governorate, opt => opt.MapFrom(src => src.Governorate!.Name));
 
+            CreateMap<Subscription, SubscriptionViewModel>();
         }
     }
 }
