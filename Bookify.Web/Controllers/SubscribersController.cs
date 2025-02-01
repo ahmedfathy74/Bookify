@@ -1,12 +1,7 @@
-﻿using Bookify.Web.Core.Models;
+﻿using Hangfire;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text.Encodings.Web;
-using WhatsAppCloudApi;
-using WhatsAppCloudApi.Services;
 
 namespace Bookify.Web.Controllers
 {
@@ -134,9 +129,9 @@ namespace Bookify.Web.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 model.Email,
-                "Welcome to Bookify", body);
+                "Welcome to Bookify", body));
 
             //Send welcome message using WhatsApp
             if (model.HasWhatsApp)
@@ -155,10 +150,11 @@ namespace Bookify.Web.Controllers
 
                 var mobileNumber = _webHostEnvironment.IsDevelopment() ? "01143177394" : model.MobileNumber ;
 
-                var result = await _whatsAppClient
+                BackgroundJob.Enqueue(() => _whatsAppClient
                     .SendMessage($"2{mobileNumber}",
                      WhatsAppLanguageCode.English_US,
-                     WhatsAppTemplates.WelcomeMessage, components);
+                     WhatsAppTemplates.WelcomeMessage, components));
+           
             }
 
             var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
@@ -234,7 +230,7 @@ namespace Bookify.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RenewSubscription(string sKey)
+        public IActionResult RenewSubscription(string sKey)
         {
             var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
 
@@ -276,9 +272,9 @@ namespace Bookify.Web.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 subscriber.Email,
-                "Bookify Subscription Renewal", body);
+                "Bookify Subscription Renewal", body));
 
             if(subscriber.HasWhatsApp)
             {
@@ -298,9 +294,9 @@ namespace Bookify.Web.Controllers
                 var mobileNumber = _webHostEnvironment.IsDevelopment() ? "01143177394" : subscriber.MobileNumber;
 
                 //Change 2 with your country code
-                await _whatsAppClient
+                BackgroundJob.Enqueue(() => _whatsAppClient
                     .SendMessage($"2{mobileNumber}", WhatsAppLanguageCode.English,
-                    WhatsAppTemplates.SubscriptionRenew, components);
+                    WhatsAppTemplates.SubscriptionRenew, components));
             }
 
             var viewModel = _mapper.Map<SubscriptionViewModel>(newSubscription);

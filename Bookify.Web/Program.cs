@@ -9,6 +9,9 @@ using Bookify.Web.Helpers;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.DataProtection;
 using WhatsAppCloudApi.Extensions;
+using Hangfire;
+using Hangfire.Dashboard;
+using Bookify.Web.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +56,16 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof
 
 builder.Services.AddExpressiveAnnotations();
 
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
+builder.Services.AddHangfireServer();
+
+builder.Services.Configure<AuthorizationOptions>(options =>
+options.AddPolicy("AdminsOnly", policy =>
+{
+    policy.RequireAuthenticatedUser();
+    policy.RequireRole(AppRoles.Admin);
+}));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,6 +97,28 @@ var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Applicati
 
 await DefaultRoles.SeedRolesAsync(roleManager);
 await DefaultUsers.SeedAdminUserAsync(userManager);
+
+//hangfire
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Dream Dashboard",
+    //IsReadOnlyFunc = (DashboardContext context) => true,
+    Authorization = new IDashboardAuthorizationFilter[]
+    {
+        new HangfireAuthorizationFilter("AdminsOnly")
+    }
+});
+
+var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+var whatsAppClient = scope.ServiceProvider.GetRequiredService<IWhatsAppClient>();
+var emailBodyBuilder = scope.ServiceProvider.GetRequiredService<IEmailBodyBuilder>();
+var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+
+var hangfireTasks = new HangfireTasks(dbContext, webHostEnvironment, whatsAppClient,
+    emailBodyBuilder, emailSender);
+
+RecurringJob.AddOrUpdate(() => hangfireTasks.PrepareExpirationAlert(), "0 14 * * *");
 
 app.MapControllerRoute(
     name: "default",
