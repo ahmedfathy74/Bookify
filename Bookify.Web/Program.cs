@@ -13,6 +13,7 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Bookify.Web.Tasks;
 using HashidsNet;
+using ViewToHTML.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultUI()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddSignInManager<SignInManager<ApplicationUser>>();
 
 builder.Services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 
@@ -67,6 +69,8 @@ options.AddPolicy("AdminsOnly", policy =>
     policy.RequireAuthenticatedUser();
     policy.RequireRole(AppRoles.Admin);
 }));
+
+builder.Services.AddViewToHTML();
 
 var app = builder.Build();
 

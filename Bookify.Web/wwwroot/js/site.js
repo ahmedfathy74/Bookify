@@ -110,6 +110,17 @@ var KTDatatables = function () {
                     title: documentTitle,
                     exportOptions: {
                         columns: exportedCols
+                    },
+                    customize: function (doc) {
+                        pdfMake.fonts = {
+                            Arial: {
+                                normal: 'arial',
+                                bold: 'arial',
+                                italics: 'arial',
+                                bolditalics: 'arial'
+                            }
+                        }
+                        doc.defaultStyle.font = 'Arial';
                     }
                 }
             ]
@@ -157,7 +168,7 @@ var KTDatatables = function () {
 
 $(document).ready(function () {
     //Disable submit button
-    $('form').not('#SignOut').on('submit', function () {
+    $('form').not('#SignOut').not('.js-excluded-validation').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
                 var input = $(this);
