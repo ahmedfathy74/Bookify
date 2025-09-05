@@ -14,6 +14,8 @@ using Hangfire.Dashboard;
 using Bookify.Web.Tasks;
 using HashidsNet;
 using ViewToHTML.Extensions;
+using Serilog;
+using Serilog.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +74,10 @@ options.AddPolicy("AdminsOnly", policy =>
 
 builder.Services.AddViewToHTML();
 
+// Add Serilog
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -85,6 +91,21 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseExceptionHandler("/Home/Error");
+
+
+//app.UseStatusCodePages(async statusCodeContext =>
+//{
+//	// using static System.Net.Mime.MediaTypeNames;
+//	statusCodeContext.HttpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Text.Plain;
+
+//	await statusCodeContext.HttpContext.Response.WriteAsync(
+//		$"Status Code Page: {statusCodeContext.HttpContext.Response.StatusCode}");
+//});
+
+//app.UseStatusCodePagesWithRedirects("/Home/Error/{0}");
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -126,6 +147,16 @@ var hangfireTasks = new HangfireTasks(dbContext, webHostEnvironment, whatsAppCli
 
 RecurringJob.AddOrUpdate(() => hangfireTasks.PrepareExpirationAlert(), "0 14 * * *");
 RecurringJob.AddOrUpdate(() => hangfireTasks.RentalsExpirationAlert(), "0 14 * * *");
+
+app.Use(async (context, next) =>
+{
+    LogContext.PushProperty("UserId", context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+    LogContext.PushProperty("UserName", context.User.FindFirst(ClaimTypes.Name)?.Value);
+
+    await next();
+});
+
+app.UseSerilogRequestLogging();
 
 app.MapControllerRoute(
     name: "default",
