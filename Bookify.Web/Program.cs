@@ -74,6 +74,10 @@ options.AddPolicy("AdminsOnly", policy =>
 
 builder.Services.AddViewToHTML();
 
+builder.Services.AddMvc(options => 
+   options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
+);
+
 // Add Serilog
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 builder.Host.UseSerilog();
@@ -109,6 +113,18 @@ app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    Secure = CookieSecurePolicy.Always
+});
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Frame-Options", "Deny");
+
+    await next();
+});
 
 app.UseRouting();
 

@@ -30,8 +30,7 @@ namespace Bookify.Web.Controllers
             return PartialView("_Form");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost]    
         public IActionResult Create(AuthorFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -63,7 +62,6 @@ namespace Bookify.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult Edit(AuthorFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -86,7 +84,6 @@ namespace Bookify.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult ToggleStatus(int id)
         {
             var author = _context.Authors.Find(id);

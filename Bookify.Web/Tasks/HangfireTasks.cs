@@ -83,7 +83,7 @@ namespace Bookify.Web.Tasks
                     .Include(r => r.RentalCopies)
                     .ThenInclude(c => c.BookCopy)
                     .ThenInclude(bc => bc!.Book)
-                    .Where(r => r.RentalCopies.Any(r => r.EndDate.Date == tomorrow))
+                    .Where(r => r.RentalCopies.Any(r => r.EndDate.Date == tomorrow && !r.ReturnDate.HasValue))
                     .ToList();
 
             foreach (var rental in rentals)

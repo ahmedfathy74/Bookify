@@ -45,7 +45,7 @@ namespace Bookify.Web.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpPost, IgnoreAntiforgeryToken]
         public IActionResult GetBooks()
         {
             var skip = int.Parse(Request.Form["start"]);
@@ -101,7 +101,6 @@ namespace Bookify.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BookFormViewModel model)
         {
             if(!ModelState.IsValid)
@@ -172,7 +171,6 @@ namespace Bookify.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(BookFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -255,7 +253,6 @@ namespace Bookify.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult ToggleStatus(int id)
         {
             var book = _context.Books.Find(id);
