@@ -97,26 +97,23 @@ body {
     min-height: 450px;
 }
 
-.launcher .sidebar {
-    position: fixed;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    width: 385px;
-    top: 50px;
-    right: 18px;
-    bottom: 50px;
-    background-color: rgba(19,0,97,.3);
-    border-radius: 1.75rem;
+@media only screen and (min-width: 1025px) {
+    .launcher .sidebar {
+        position: fixed;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        width: 425px;
+        top: 50px;
+        right: 50px;
+        bottom: 50px;
+        background-color: rgba(19,0,97,.3);
+        border-radius: 1.75rem;
+    }
 }
 
 .transform-x {
     transform: scaleX(-1);
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
 /* End Custom Styles */
