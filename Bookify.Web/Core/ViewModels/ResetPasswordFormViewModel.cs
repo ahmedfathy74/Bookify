@@ -1,6 +1,4 @@
-﻿using UoN.ExpressiveAnnotations.NetCore.Attributes;
-
-namespace Bookify.Web.Core.ViewModels
+﻿namespace Bookify.Web.Core.ViewModels
 {
     public class ResetPasswordFormViewModel
     {

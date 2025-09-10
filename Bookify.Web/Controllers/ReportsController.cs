@@ -1,99 +1,94 @@
-﻿using Bookify.Web.Core.Utilities;
-using ClosedXML.Excel;
-using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using OpenHtmlToPdf;
 using System.Net.Mime;
 using ViewToHTML.Services;
-using OpenHtmlToPdf;
-using Bookify.Web.Extensions;
-using Bookify.Web.Core.ViewModels;
 
 namespace Bookify.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Admin)]
     public class ReportsController : Controller
     {
-		private readonly ApplicationDbContext _context;
-		private readonly IWebHostEnvironment _webHost;
-		private readonly IMapper _mapper;
-		private readonly IViewRendererService _viewRendererService;
+        private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHost;
+        private readonly IMapper _mapper;
+        private readonly IViewRendererService _viewRendererService;
 
-		private readonly string _logoPath;
-		private readonly int _sheetStartRow = 5;
+        private readonly string _logoPath;
+        private readonly int _sheetStartRow = 5;
 
-		public ReportsController(ApplicationDbContext context, IMapper mapper,
-			IWebHostEnvironment webHost, IViewRendererService viewRendererService)
-		{
-			_context = context;
-			_mapper = mapper;
-			_webHost = webHost;
-			_viewRendererService = viewRendererService;
+        public ReportsController(ApplicationDbContext context, IMapper mapper,
+            IWebHostEnvironment webHost, IViewRendererService viewRendererService)
+        {
+            _context = context;
+            _mapper = mapper;
+            _webHost = webHost;
+            _viewRendererService = viewRendererService;
 
-			_logoPath = $"{_webHost.WebRootPath}/assets/images/Logo.png";
-		}
+            _logoPath = $"{_webHost.WebRootPath}/assets/images/Logo.png";
+        }
 
 
-		public IActionResult Index()
+        public IActionResult Index()
         {
             return View();
         }
 
-		#region Books
-		public IActionResult Books(IList<int> selectedAuthors, IList<int> selectedCategories,
-			int? pageNumber)
-		{
-			var authors = _context.Authors.OrderBy(a => a.Name).ToList();
-			var categories = _context.Categories.OrderBy(a => a.Name).ToList();
+        #region Books
+        public IActionResult Books(IList<int> selectedAuthors, IList<int> selectedCategories,
+            int? pageNumber)
+        {
+            var authors = _context.Authors.OrderBy(a => a.Name).ToList();
+            var categories = _context.Categories.OrderBy(a => a.Name).ToList();
 
-			IQueryable<Book> books = _context.Books
-						.Include(b => b.Author)
-						.Include(b => b.Categories)
-						.ThenInclude(c => c.Category)
-						.Where(b => (!selectedAuthors.Any() || selectedAuthors.Contains(b.AuthorId))
-						&& (!selectedCategories.Any() || b.Categories.Any(c => selectedCategories.Contains(c.CategoryId))));
+            IQueryable<Book> books = _context.Books
+                        .Include(b => b.Author)
+                        .Include(b => b.Categories)
+                        .ThenInclude(c => c.Category)
+                        .Where(b => (!selectedAuthors.Any() || selectedAuthors.Contains(b.AuthorId))
+                        && (!selectedCategories.Any() || b.Categories.Any(c => selectedCategories.Contains(c.CategoryId))));
 
-			//if (selectedAuthors.Any())
-			//    books = books.Where(b => selectedAuthors.Contains(b.AuthorId));
+            //if (selectedAuthors.Any())
+            //    books = books.Where(b => selectedAuthors.Contains(b.AuthorId));
 
-			//if (selectedCategories.Any())
-			//    books = books.Where(b => b.Categories.Any(c => selectedCategories.Contains(c.CategoryId)));
+            //if (selectedCategories.Any())
+            //    books = books.Where(b => b.Categories.Any(c => selectedCategories.Contains(c.CategoryId)));
 
-			var viewModel = new BooksReportViewModel
-			{
-				Authors = _mapper.Map<IEnumerable<SelectListItem>>(authors),
-				Categories = _mapper.Map<IEnumerable<SelectListItem>>(categories)
-			};
+            var viewModel = new BooksReportViewModel
+            {
+                Authors = _mapper.Map<IEnumerable<SelectListItem>>(authors),
+                Categories = _mapper.Map<IEnumerable<SelectListItem>>(categories)
+            };
 
-			if (pageNumber is not null)
-				viewModel.Books = PaginatedList<Book>.Create(books, pageNumber ?? 0, (int)ReportsConfigurations.PageSize);
+            if (pageNumber is not null)
+                viewModel.Books = PaginatedList<Book>.Create(books, pageNumber ?? 0, (int)ReportsConfigurations.PageSize);
 
-			return View(viewModel);
-		}
+            return View(viewModel);
+        }
 
-		public async Task<IActionResult> ExportBooksToExcel(string authors, string categories)
-		{
-			var selectedAuthors = authors?.Split(',');
-			var selectedCategories = categories?.Split(',');
+        public async Task<IActionResult> ExportBooksToExcel(string authors, string categories)
+        {
+            var selectedAuthors = authors?.Split(',');
+            var selectedCategories = categories?.Split(',');
 
-			var books = _context.Books
-						.Include(b => b.Author)
-						.Include(b => b.Categories)
-						.ThenInclude(c => c.Category)
-						.Where(b => (string.IsNullOrEmpty(authors) || selectedAuthors!.Contains(b.AuthorId.ToString()))
-						&& (string.IsNullOrEmpty(categories) || b.Categories.Any(c => selectedCategories!.Contains(c.CategoryId.ToString()))))
-						.ToList();
+            var books = _context.Books
+                        .Include(b => b.Author)
+                        .Include(b => b.Categories)
+                        .ThenInclude(c => c.Category)
+                        .Where(b => (string.IsNullOrEmpty(authors) || selectedAuthors!.Contains(b.AuthorId.ToString()))
+                        && (string.IsNullOrEmpty(categories) || b.Categories.Any(c => selectedCategories!.Contains(c.CategoryId.ToString()))))
+                        .ToList();
 
-			using var workbook = new XLWorkbook();
+            using var workbook = new XLWorkbook();
 
-			var sheet = workbook.AddWorksheet("Books");
+            var sheet = workbook.AddWorksheet("Books");
 
-			sheet.AddLocalImage(_logoPath);
+            sheet.AddLocalImage(_logoPath);
 
-			var headerCells = new string[] { "Title", "Author", "Categories", "Publisher",
+            var headerCells = new string[] { "Title", "Author", "Categories", "Publisher",
                 "Publishing Date", "Hall", "Available for rental", "Status" };
 
-			sheet.AddHeader(headerCells);
+            sheet.AddHeader(headerCells);
 
             for (int i = 0; i < books.Count; i++)
             {
@@ -107,15 +102,15 @@ namespace Bookify.Web.Controllers
                 sheet.Cell(i + _sheetStartRow, 8).SetValue(books[i].IsDeleted ? "Deleted" : "Available");
             }
 
-			sheet.Format();
+            sheet.Format();
             sheet.AddTable(books.Count, headerCells.Length);
             sheet.ShowGridLines = false;
 
-			await using var stream = new MemoryStream();
+            await using var stream = new MemoryStream();
 
-			workbook.SaveAs(stream);
+            workbook.SaveAs(stream);
 
-			return File(stream.ToArray(), MediaTypeNames.Application.Octet, "Books.xlsx");
+            return File(stream.ToArray(), MediaTypeNames.Application.Octet, "Books.xlsx");
         }
 
         public async Task<IActionResult> ExportBooksToPDF(string authors, string categories)
@@ -165,17 +160,17 @@ namespace Bookify.Web.Controllers
         #endregion
 
         #region Rentals
-		public IActionResult Rentals(string duration, int? pageNumber)
-		{
-			var viewModel = new RentalReportViewModel { Duration = duration };
+        public IActionResult Rentals(string duration, int? pageNumber)
+        {
+            var viewModel = new RentalReportViewModel { Duration = duration };
 
-			if(!string.IsNullOrEmpty(duration))
-			{
-				if(!DateTime.TryParse(duration.Split(" - ")[0], out DateTime from)) 
-				{
-					ModelState.AddModelError("Duration", Errors.InvalidStartDate);
-					return View(viewModel);
-				}
+            if (!string.IsNullOrEmpty(duration))
+            {
+                if (!DateTime.TryParse(duration.Split(" - ")[0], out DateTime from))
+                {
+                    ModelState.AddModelError("Duration", Errors.InvalidStartDate);
+                    return View(viewModel);
+                }
 
                 if (!DateTime.TryParse(duration.Split(" - ")[1], out DateTime to))
                 {
@@ -183,22 +178,22 @@ namespace Bookify.Web.Controllers
                     return View(viewModel);
                 }
 
-				IQueryable<RentalCopy> rentals = _context.RentalCopies
-					.Include(c => c.BookCopy)
-					.ThenInclude(r => r!.Book)
-					.ThenInclude(b => b!.Author)
-					.Include(c => c.Rental)
-					.ThenInclude(c => c!.Subscriber)
-					.Where(r => r.RentalDate >= from && r.RentalDate <= to);
+                IQueryable<RentalCopy> rentals = _context.RentalCopies
+                    .Include(c => c.BookCopy)
+                    .ThenInclude(r => r!.Book)
+                    .ThenInclude(b => b!.Author)
+                    .Include(c => c.Rental)
+                    .ThenInclude(c => c!.Subscriber)
+                    .Where(r => r.RentalDate >= from && r.RentalDate <= to);
 
-				if(pageNumber is not null)
-					viewModel.Rentals = PaginatedList<RentalCopy>.Create(rentals, pageNumber ?? 0, (int)ReportsConfigurations.PageSize);
+                if (pageNumber is not null)
+                    viewModel.Rentals = PaginatedList<RentalCopy>.Create(rentals, pageNumber ?? 0, (int)ReportsConfigurations.PageSize);
             }
 
-			ModelState.Clear();
+            ModelState.Clear();
 
-			return View(viewModel);
-		}
+            return View(viewModel);
+        }
 
         public async Task<IActionResult> ExportRentalsToExcel(string duration)
         {
@@ -285,7 +280,7 @@ namespace Bookify.Web.Controllers
         {
             var rentals = _context.RentalCopies
                         .Include(c => c.BookCopy)
-                        .ThenInclude (r => r!.Book)
+                        .ThenInclude(r => r!.Book)
                         .Include(c => c.Rental)
                         .ThenInclude(c => c!.Subscriber)
                         .Where(c => !c.ReturnDate.HasValue && c.EndDate < DateTime.Today)

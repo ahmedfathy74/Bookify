@@ -1,7 +1,4 @@
-﻿using Bookify.Web.Core.Models;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.DataProtection;
 
 namespace Bookify.Web.Controllers
 {
@@ -29,7 +26,7 @@ namespace Bookify.Web.Controllers
                 .ThenInclude(e => e!.Book)
                 .SingleOrDefault(r => r.Id == id);
 
-            if(rental is null)
+            if (rental is null)
                 return NotFound();
 
             var viewModel = _mapper.Map<RentalViewModel>(rental);
@@ -53,7 +50,7 @@ namespace Bookify.Web.Controllers
             var (errorMessage, maxAllowedCopies) = ValidateSubscriber(subscriber);
 
             if (!string.IsNullOrEmpty(errorMessage))
-                return View("NotAllowedRental" , errorMessage);
+                return View("NotAllowedRental", errorMessage);
 
             var viewModel = new RentalFormViewModel
             {
@@ -93,13 +90,13 @@ namespace Bookify.Web.Controllers
             Rental rental = new()
             {
                 RentalCopies = copies,
-                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+                CreatedById = User.GetUserId()
             };
 
             subscriber.Rentals.Add(rental);
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Details), new { id = rental.Id});
+            return RedirectToAction(nameof(Details), new { id = rental.Id });
 
         }
 
@@ -110,7 +107,7 @@ namespace Bookify.Web.Controllers
                 .ThenInclude(e => e.BookCopy)
                 .SingleOrDefault(c => c.Id == id);
 
-            if(rental is null || rental.CreatedOn.Date != DateTime.Today)
+            if (rental is null || rental.CreatedOn.Date != DateTime.Today)
                 return NotFound();
 
             var subscriber = _context.Subscribers
@@ -124,7 +121,7 @@ namespace Bookify.Web.Controllers
             if (!string.IsNullOrEmpty(errorMessage))
                 return View("NotAllowedRental", errorMessage);
 
-            var currentCopiesIds = rental.RentalCopies.Select(c =>c.BookCopyId).ToList();
+            var currentCopiesIds = rental.RentalCopies.Select(c => c.BookCopyId).ToList();
 
             var currentCopies = _context.BookCopies
                 .Where(c => currentCopiesIds.Contains(c.Id))
@@ -173,7 +170,7 @@ namespace Bookify.Web.Controllers
                 return View("NotAllowedRental", rentalsError);
 
             rental.RentalCopies = copies;
-            rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            rental.LastUpdatedById = User.GetUserId();
             rental.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();
@@ -285,7 +282,7 @@ namespace Bookify.Web.Controllers
             if (isUpdated)
             {
                 rental.LastUpdatedOn = DateTime.Now;
-                rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                rental.LastUpdatedById = User.GetUserId();
                 rental.PenaltyPaid = model.PenaltyPaid;
 
                 _context.SaveChanges();
@@ -304,7 +301,7 @@ namespace Bookify.Web.Controllers
 
             var copy = _context.BookCopies
                 .Include(c => c.Book)
-                .SingleOrDefault(c => c.SerialNumber.ToString() == model.Value && !c.IsDeleted 
+                .SingleOrDefault(c => c.SerialNumber.ToString() == model.Value && !c.IsDeleted
                   && !c.Book!.IsDeleted);
 
             if (copy == null)
@@ -330,12 +327,12 @@ namespace Bookify.Web.Controllers
         {
             var rental = _context.Rentals.Find(id);
 
-            if(rental is null || rental.CreatedOn.Date != DateTime.Today)
+            if (rental is null || rental.CreatedOn.Date != DateTime.Today)
                 return NotFound();
 
             rental.IsDeleted = true;
             rental.LastUpdatedOn = DateTime.Now;
-            rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            rental.LastUpdatedById = User.GetUserId();
 
             _context.SaveChanges();
 
@@ -362,10 +359,10 @@ namespace Bookify.Web.Controllers
             if (availableCopiesCount.Equals(0))
                 return (errorMessage: Errors.MaxCopiesReached, maxAllowedCopies: null);
 
-            return (errorMessage:string.Empty, maxAllowedCopies: availableCopiesCount);
+            return (errorMessage: string.Empty, maxAllowedCopies: availableCopiesCount);
         }
 
-        private (string errorMessage, ICollection<RentalCopy> copies)ValidateCopies(IEnumerable<int> selectedSerials,int subscriberId, int? rentalId = null)
+        private (string errorMessage, ICollection<RentalCopy> copies) ValidateCopies(IEnumerable<int> selectedSerials, int subscriberId, int? rentalId = null)
         {
             var selectedCopies = _context.BookCopies
                 .Include(c => c.Book)

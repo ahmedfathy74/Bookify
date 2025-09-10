@@ -1,6 +1,4 @@
-﻿using Bookify.Web.Core.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Bookify.Web.Data
 {
@@ -36,8 +34,8 @@ namespace Bookify.Web.Data
                 .HasDefaultValueSql("NEXT VALUE FOR shared.SerialNumber");
 
             // generate composite key in many to many relationship table
-            builder.Entity<BookCategory>().HasKey(e => new { e.BookId , e.CategoryId});
-            builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId , e.BookCopyId});
+            builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });
+            builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId, e.BookCopyId });
             builder.Entity<Rental>().HasQueryFilter(e => !e.IsDeleted);
             builder.Entity<RentalCopy>().HasQueryFilter(e => !e.Rental!.IsDeleted);
 
@@ -45,7 +43,7 @@ namespace Bookify.Web.Data
                 .SelectMany(t => t.GetForeignKeys())
                 .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade && !fk.IsOwnership);
 
-            foreach(var fk in cascadeFKs)
+            foreach (var fk in cascadeFKs)
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
 
             base.OnModelCreating(builder);

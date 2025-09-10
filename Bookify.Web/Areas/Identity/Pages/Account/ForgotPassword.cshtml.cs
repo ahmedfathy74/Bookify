@@ -2,18 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Bookify.Web.Core.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account
 {
@@ -22,19 +16,19 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
 
-		private readonly IEmailBodyBuilder _emailBodyBuilder;
-		public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender, IEmailBodyBuilder emailBodyBuilder)
-		{
-			_userManager = userManager;
-			_emailSender = emailSender;
-			_emailBodyBuilder = emailBodyBuilder;
-		}
+        private readonly IEmailBodyBuilder _emailBodyBuilder;
+        public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender, IEmailBodyBuilder emailBodyBuilder)
+        {
+            _userManager = userManager;
+            _emailSender = emailSender;
+            _emailBodyBuilder = emailBodyBuilder;
+        }
 
-		/// <summary>
-		///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-		///     directly from your code. This API may change or be removed in future releases.
-		/// </summary>
-		[BindProperty]
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        [BindProperty]
         public InputModel Input { get; set; }
 
         /// <summary>
@@ -84,12 +78,12 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
 
                 var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
 
-				await _emailSender.SendEmailAsync(
-					Input.Email,
-					"Reset Password",
-					body);
+                await _emailSender.SendEmailAsync(
+                    Input.Email,
+                    "Reset Password",
+                    body);
 
-				return RedirectToPage("./ForgotPasswordConfirmation");
+                return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
             return Page();

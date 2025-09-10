@@ -1,10 +1,8 @@
-﻿using Bookify.Web.Core.Models;
-
-namespace Bookify.Web.Services
+﻿namespace Bookify.Web.Services
 {
     public class ImageService : IImageService
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;       
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private List<string> _allowedExtensions = new() { ".jpg", ".jpeg", ".png" };
         private int _maxAllowedSize = 2097152;
 

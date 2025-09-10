@@ -2,19 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Bookify.Web.Core.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account
 {
@@ -140,11 +130,11 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
                     _logger.LogWarning("User account locked out.");
                     return RedirectToPage("./Lockout");
                 }
-                if(result.IsNotAllowed)
+                if (result.IsNotAllowed)
                 {
-					return RedirectToPage("./ResendEmailConfirmation" , new { username = Input.Username});
-				}
-				else
+                    return RedirectToPage("./ResendEmailConfirmation", new { username = Input.Username });
+                }
+                else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return Page();

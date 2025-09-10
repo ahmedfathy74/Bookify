@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace Bookify.Web.Core.Models
+﻿namespace Bookify.Web.Core.Models
 {
     [Index(nameof(Name), nameof(GovernorateId), IsUnique = true)]
     public class Area : BaseModel

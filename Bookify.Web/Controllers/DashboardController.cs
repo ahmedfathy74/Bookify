@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace Bookify.Web.Controllers
+﻿namespace Bookify.Web.Controllers
 {
     [Authorize]
     public class DashboardController : Controller
@@ -18,7 +16,7 @@ namespace Bookify.Web.Controllers
         {
             var numberOfCopies = _context.BookCopies.Count(c => !c.IsDeleted);
 
-            numberOfCopies  = numberOfCopies <=10 ? numberOfCopies : numberOfCopies / 10 * 10;
+            numberOfCopies = numberOfCopies <= 10 ? numberOfCopies : numberOfCopies / 10 * 10;
 
             var numberOfSubscribers = _context.Subscribers.Count(c => !c.IsDeleted);
 
@@ -52,7 +50,7 @@ namespace Bookify.Web.Controllers
                 .Take(6)
                 .Select(b => new BookViewModel
                 {
-                    Id = b.BookId, 
+                    Id = b.BookId,
                     Title = b.Title,
                     ImageThumbnailUrl = b.ImageThumbnailUrl,
                     Author = b.AutherName
@@ -63,7 +61,7 @@ namespace Bookify.Web.Controllers
             {
                 NumberOfCopies = numberOfCopies,
                 NumberOfSubscribers = numberOfSubscribers,
-                LastAddedBooks = _mapper.Map <IEnumerable<BookViewModel>>(lastAddedBooks),
+                LastAddedBooks = _mapper.Map<IEnumerable<BookViewModel>>(lastAddedBooks),
                 TopBooks = topBooks
             };
             return View(viewModel);

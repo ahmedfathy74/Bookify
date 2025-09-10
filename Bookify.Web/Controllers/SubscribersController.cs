@@ -62,7 +62,7 @@ namespace Bookify.Web.Controllers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
                 .Include(s => s.Subscriptions)
-                .Include(s =>s.Rentals)
+                .Include(s => s.Rentals)
                 .ThenInclude(r => r.RentalCopies)
                 .SingleOrDefault(s => s.Id == subscriberId);
 
@@ -85,25 +85,25 @@ namespace Bookify.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(SubscriberFormViewModel model)
         {
-            if(!ModelState.IsValid)
-                return View("Form",PopulateViewModel(model));
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
 
             var subscriber = _mapper.Map<Subscriber>(model);
 
             var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image!.FileName)}";
             var imagePath = "/images/Subscribers";
 
-            var (isUpload, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, imagePath ,hasThumbnail: true);
+            var (isUpload, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, imagePath, hasThumbnail: true);
 
-            if(!isUpload)
+            if (!isUpload)
             {
                 ModelState.AddModelError("Image", errorMessage!);
                 return View("Form", PopulateViewModel(model));
             }
 
-			subscriber.ImageUrl = $"{imagePath}/{imageName}";
-			subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
-			subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.ImageUrl = $"{imagePath}/{imageName}";
+            subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
+            subscriber.CreatedById = User.GetUserId();
 
             Subscription subscription = new()
             {
@@ -148,13 +148,13 @@ namespace Bookify.Web.Controllers
                     }
                 };
 
-                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "01143177394" : model.MobileNumber ;
+                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "01143177394" : model.MobileNumber;
 
                 BackgroundJob.Enqueue(() => _whatsAppClient
                     .SendMessage($"2{mobileNumber}",
                      WhatsAppLanguageCode.English_US,
                      WhatsAppTemplates.WelcomeMessage, components));
-           
+
             }
 
             var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
@@ -167,7 +167,7 @@ namespace Bookify.Web.Controllers
         {
             var subscriberId = int.Parse(_dataProtector.Unprotect(id));
 
-			var subscriber = _context.Subscribers.Find(subscriberId);
+            var subscriber = _context.Subscribers.Find(subscriberId);
 
             if (subscriber is null)
                 return NotFound();
@@ -176,24 +176,24 @@ namespace Bookify.Web.Controllers
             var viewModel = PopulateViewModel(model);
             viewModel.Key = id;
 
-            return View("Form",viewModel);
+            return View("Form", viewModel);
         }
         [HttpPost]
         public async Task<IActionResult> Edit(SubscriberFormViewModel model)
         {
-            if(!ModelState.IsValid)
-                return View("Form",PopulateViewModel(model));
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
 
             var subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
 
             var subscriber = _context.Subscribers.Find(subscriberId);
 
-            if(subscriber is null)
+            if (subscriber is null)
                 return NotFound();
 
-            if(model.Image is not null)
+            if (model.Image is not null)
             {
-                if(!string.IsNullOrEmpty(subscriber.ImageUrl))
+                if (!string.IsNullOrEmpty(subscriber.ImageUrl))
                 {
                     _imageService.Delete(subscriber.ImageUrl, subscriber.ImageThumbnailUrl);
                 }
@@ -203,28 +203,28 @@ namespace Bookify.Web.Controllers
 
                 var (isUpload, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, imagePath, hasThumbnail: true);
 
-                if(!isUpload)
+                if (!isUpload)
                 {
                     ModelState.AddModelError("Image", errorMessage!);
-                    return View("Form" , PopulateViewModel(model));
+                    return View("Form", PopulateViewModel(model));
                 }
 
                 model.ImageUrl = $"{imagePath}/{imageName}";
                 model.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
             }
-            else if(!string.IsNullOrEmpty(subscriber.ImageUrl))
+            else if (!string.IsNullOrEmpty(subscriber.ImageUrl))
             {
                 model.ImageUrl = subscriber.ImageUrl;
                 model.ImageThumbnailUrl = subscriber.ImageUrl;
             }
 
-			subscriber = _mapper.Map(model, subscriber);
-			subscriber.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-			subscriber.LastUpdatedOn = DateTime.Now;
+            subscriber = _mapper.Map(model, subscriber);
+            subscriber.LastUpdatedById = User.GetUserId();
+            subscriber.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Details), new { id = model.Key});
+            return RedirectToAction(nameof(Details), new { id = model.Key });
         }
 
         [HttpPost]
@@ -236,7 +236,7 @@ namespace Bookify.Web.Controllers
                                         .Include(s => s.Subscriptions)
                                         .SingleOrDefault(s => s.Id == subscriberId);
 
-            if(subscriber is null)
+            if (subscriber is null)
                 return NotFound();
 
             if (subscriber.IsBlackListed)
@@ -244,13 +244,13 @@ namespace Bookify.Web.Controllers
 
             var lastSubscription = subscriber.Subscriptions.Last();
 
-            var startDate = lastSubscription.EndDate < DateTime.Today 
-                ? DateTime.Today 
+            var startDate = lastSubscription.EndDate < DateTime.Today
+                ? DateTime.Today
                 : lastSubscription.EndDate.AddDays(1);
 
             Subscription newSubscription = new()
             {
-                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                CreatedById = User.GetUserId(),
                 CreatedOn = DateTime.Now,
                 StartDate = startDate,
                 EndDate = startDate.AddYears(1)
@@ -274,7 +274,7 @@ namespace Bookify.Web.Controllers
                 subscriber.Email,
                 "Bookify Subscription Renewal", body));
 
-            if(subscriber.HasWhatsApp)
+            if (subscriber.HasWhatsApp)
             {
                 var components = new List<WhatsAppComponent>()
                 {
@@ -316,13 +316,13 @@ namespace Bookify.Web.Controllers
         {
             var subscriberId = 0;
 
-            if(!string.IsNullOrEmpty(model.Key))
+            if (!string.IsNullOrEmpty(model.Key))
                 subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
 
             var subscriber = _context.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
             var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
-            return Json(isAllowed); 
+            return Json(isAllowed);
         }
         public IActionResult AllowMobileNumber(SubscriberFormViewModel model)
         {
@@ -355,7 +355,7 @@ namespace Bookify.Web.Controllers
             var governorates = _context.Governorates.Where(g => !g.IsDeleted).OrderBy(g => g.Name).ToList();
             viewModel.Governorates = _mapper.Map<IEnumerable<SelectListItem>>(governorates);
 
-            if(model?.GovernorateId > 0)
+            if (model?.GovernorateId > 0)
             {
                 var areas = _context.Areas
                     .Where(a => a.GovernorateId == model.GovernorateId && !a.IsDeleted)

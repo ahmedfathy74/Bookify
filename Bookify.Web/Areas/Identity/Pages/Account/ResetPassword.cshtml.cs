@@ -2,16 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Bookify.Web.Core.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account
 {
@@ -45,25 +39,25 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
             [EmailAddress]
             public string Email { get; set; }
 
-			/// <summary>
-			///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-			///     directly from your code. This API may change or be removed in future releases.
-			/// </summary>
-			[Required]
-			[StringLength(100, ErrorMessage = Errors.MaxMinLength, MinimumLength = 8)]
-			[RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
-			[DataType(DataType.Password)]
-			[Display(Name = "New password")]
-			public string Password { get; set; }
+            /// <summary>
+            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     directly from your code. This API may change or be removed in future releases.
+            /// </summary>
+            [Required]
+            [StringLength(100, ErrorMessage = Errors.MaxMinLength, MinimumLength = 8)]
+            [RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
+            [DataType(DataType.Password)]
+            [Display(Name = "New password")]
+            public string Password { get; set; }
 
-			/// <summary>
-			///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-			///     directly from your code. This API may change or be removed in future releases.
-			/// </summary>
-			[DataType(DataType.Password)]
-			[Display(Name = "Confirm new password")]
-			[Compare("Password", ErrorMessage = Errors.ConfirmPasswordNotMatch)]
-			public string ConfirmPassword { get; set; }
+            /// <summary>
+            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     directly from your code. This API may change or be removed in future releases.
+            /// </summary>
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirm new password")]
+            [Compare("Password", ErrorMessage = Errors.ConfirmPasswordNotMatch)]
+            public string ConfirmPassword { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

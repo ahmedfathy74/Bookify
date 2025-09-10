@@ -1,6 +1,4 @@
-﻿using MessagePack;
-
-namespace Bookify.Web.Core.ViewModels
+﻿namespace Bookify.Web.Core.ViewModels
 {
     public class RentalFormViewModel
     {

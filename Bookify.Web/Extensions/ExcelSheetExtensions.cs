@@ -5,7 +5,7 @@ namespace Bookify.Web.Extensions
     public static class ExcelSheetExtensions
     {
         private static int _startRow = 4;
-        
+
         public static void AddHeader(this IXLWorksheet sheet, string[] cells)
         {
             for (int i = 0; i < cells.Length; i++)

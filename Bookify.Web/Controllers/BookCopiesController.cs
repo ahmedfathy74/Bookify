@@ -33,7 +33,7 @@ namespace Bookify.Web.Controllers
         [HttpPost]
         public IActionResult Create(BookCopyFormViewModel model)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest();
 
             var book = _context.Books.Find(model.BookId);
@@ -45,7 +45,7 @@ namespace Bookify.Web.Controllers
             {
                 EditionNumber = model.EditionNumber,
                 IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental,
-                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+                CreatedById = User.GetUserId()
             };
 
             book.Copies.Add(copy);
@@ -66,7 +66,7 @@ namespace Bookify.Web.Controllers
 
             var viewModel = _mapper.Map<BookCopyFormViewModel>(copy);
             viewModel.ShowRentalInput = copy.Book!.IsAvailableForRental;
-           
+
             return PartialView("Form", viewModel);
         }
 
@@ -76,14 +76,14 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var copy = _context.BookCopies.Include(c => c.Book).SingleOrDefault(c =>c.Id == model.Id);
+            var copy = _context.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == model.Id);
 
             if (copy is null)
                 return NotFound();
 
             copy.EditionNumber = model.EditionNumber;
             copy.IsAvailableForRental = copy.Book!.IsAvailableForRental && model.IsAvailableForRental;
-            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            copy.LastUpdatedById = User.GetUserId();
             copy.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();
@@ -110,7 +110,7 @@ namespace Bookify.Web.Controllers
         [HttpPost]
         public IActionResult ToggleStatus(int id)
         {
-            var copy  = _context.BookCopies.Find(id);
+            var copy = _context.BookCopies.Find(id);
 
             if (copy is null)
             {
@@ -118,7 +118,7 @@ namespace Bookify.Web.Controllers
             }
 
             copy.IsDeleted = !copy.IsDeleted;
-            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;    
+            copy.LastUpdatedById = User.GetUserId();
             copy.LastUpdatedOn = DateTime.UtcNow;
 
             _context.SaveChanges();

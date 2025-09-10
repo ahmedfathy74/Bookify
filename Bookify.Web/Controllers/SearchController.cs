@@ -1,25 +1,24 @@
 ﻿using HashidsNet;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Web.Controllers
 {
-	public class SearchController : Controller
-	{
-		private readonly ApplicationDbContext _context;
-		private readonly IMapper _mapper;
-		private readonly IHashids _hashids;
+    public class SearchController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IHashids _hashids;
 
-		public SearchController(ApplicationDbContext context, IMapper mapper, IHashids hashids)
-		{
-			_context = context;
-			_mapper = mapper;
-			_hashids = hashids;
-		}
+        public SearchController(ApplicationDbContext context, IMapper mapper, IHashids hashids)
+        {
+            _context = context;
+            _mapper = mapper;
+            _hashids = hashids;
+        }
 
-		public IActionResult Index()
-		{
-			return View();
-		}
+        public IActionResult Index()
+        {
+            return View();
+        }
 
         public IActionResult Find(string query)
         {
@@ -33,11 +32,11 @@ namespace Bookify.Web.Controllers
         }
 
         public IActionResult Details(string bKey)
-		{
-			var bookId = _hashids.DecodeHex(bKey);
+        {
+            var bookId = _hashids.DecodeHex(bKey);
 
-			if(bookId.Length == 0)
-				return NotFound();
+            if (bookId.Length == 0)
+                return NotFound();
 
             var book = _context.Books
                 .Include(b => b.Author)
@@ -51,7 +50,7 @@ namespace Bookify.Web.Controllers
 
             var viewModel = _mapper.Map<BookViewModel>(book);
 
-			return View(viewModel);
+            return View(viewModel);
         }
     }
 }

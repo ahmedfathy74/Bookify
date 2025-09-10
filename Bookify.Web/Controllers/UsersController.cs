@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Bookify.Web.Controllers
 {
@@ -56,7 +54,7 @@ namespace Bookify.Web.Controllers
                                     Value = r.Name
                                 }).ToListAsync()
             };
-            return PartialView("_Form" , viewModel);
+            return PartialView("_Form", viewModel);
         }
 
         [HttpPost]
@@ -70,7 +68,7 @@ namespace Bookify.Web.Controllers
                 FullName = model.FullName,
                 UserName = model.UserName,
                 Email = model.Email,
-                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+                CreatedById = User.GetUserId()
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -138,22 +136,22 @@ namespace Bookify.Web.Controllers
 
             var user = await _userManager.FindByIdAsync(model.Id);
 
-            if(user is null)
+            if (user is null)
                 return NotFound();
 
-            user = _mapper.Map(model,user);
-            user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            user = _mapper.Map(model, user);
+            user.LastUpdatedById = User.GetUserId();
             user.LastUpdatedOn = DateTime.Now;
 
             var result = await _userManager.UpdateAsync(user);
 
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 var currentRoles = await _userManager.GetRolesAsync(user);
 
                 var rolesUpdated = !currentRoles.SequenceEqual(model.SelectedRoles);
 
-                if(rolesUpdated)
+                if (rolesUpdated)
                 {
                     await _userManager.RemoveFromRolesAsync(user, currentRoles);
                     await _userManager.AddToRolesAsync(user, model.SelectedRoles);
@@ -174,7 +172,7 @@ namespace Bookify.Web.Controllers
         {
             var user = await _userManager.FindByIdAsync(id);
 
-            if(user is null)
+            if (user is null)
                 return NotFound();
 
             var viewModel = new ResetPasswordFormViewModel { Id = user.Id };
@@ -201,7 +199,7 @@ namespace Bookify.Web.Controllers
 
             if (result.Succeeded)
             {
-                user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                user.LastUpdatedById = User.GetUserId();
                 user.LastUpdatedOn = DateTime.Now;
 
                 await _userManager.UpdateAsync(user);
@@ -215,7 +213,7 @@ namespace Bookify.Web.Controllers
             await _userManager.UpdateAsync(user);
 
             return BadRequest(string.Join(',', result.Errors.Select(error => error.Description)));
- 
+
         }
 
         [HttpPost]
@@ -227,12 +225,12 @@ namespace Bookify.Web.Controllers
                 return NotFound();
 
             user.IsDeleted = !user.IsDeleted;
-            user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            user.LastUpdatedById = User.GetUserId();
             user.LastUpdatedOn = DateTime.Now;
 
             await _userManager.UpdateAsync(user);
 
-            if(user.IsDeleted)
+            if (user.IsDeleted)
                 await _userManager.UpdateSecurityStampAsync(user);
 
             return Ok(user.LastUpdatedById.ToString());
@@ -246,7 +244,7 @@ namespace Bookify.Web.Controllers
             if (user is null)
                 return NotFound();
 
-           var isLocked = await _userManager.IsLockedOutAsync(user);
+            var isLocked = await _userManager.IsLockedOutAsync(user);
 
             if (isLocked)
                 await _userManager.SetLockoutEndDateAsync(user, null);
