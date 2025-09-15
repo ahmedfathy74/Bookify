@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using Bookify.Domain.Entities;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OpenHtmlToPdf;
 using System.Net.Mime;
@@ -9,7 +10,7 @@ namespace Bookify.Web.Controllers
     [Authorize(Roles = AppRoles.Admin)]
     public class ReportsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHost;
         private readonly IMapper _mapper;
         private readonly IViewRendererService _viewRendererService;
@@ -17,7 +18,7 @@ namespace Bookify.Web.Controllers
         private readonly string _logoPath;
         private readonly int _sheetStartRow = 5;
 
-        public ReportsController(ApplicationDbContext context, IMapper mapper,
+        public ReportsController(IApplicationDbContext context, IMapper mapper,
             IWebHostEnvironment webHost, IViewRendererService viewRendererService)
         {
             _context = context;

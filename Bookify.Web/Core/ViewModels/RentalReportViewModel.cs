@@ -1,4 +1,6 @@
-﻿namespace Bookify.Web.Core.ViewModels
+﻿using Bookify.Domain.Entities;
+
+namespace Bookify.Web.Core.ViewModels
 {
     public class RentalReportViewModel
     {

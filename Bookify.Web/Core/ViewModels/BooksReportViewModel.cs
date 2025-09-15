@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Bookify.Domain.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Bookify.Web.Core.ViewModels
 {

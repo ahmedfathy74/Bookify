@@ -5,6 +5,12 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookify.Web", "Bookify.Web\Bookify.Web.csproj", "{BB4C1013-D4F0-482F-A4E4-D1A60AAEE5EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookify.Domain", "Bookify.Domain\Bookify.Domain.csproj", "{590DD3A1-820B-49EC-AB41-EAE34530F992}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookify.Application", "Bookify.Application\Bookify.Application.csproj", "{05CF1799-4448-4E01-A1FE-88F8AA3817DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookify.Infrastructure", "Bookify.Infrastructure\Bookify.Infrastructure.csproj", "{5CFE9A62-0EE4-4B66-B6E2-D31E5147FC12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{BB4C1013-D4F0-482F-A4E4-D1A60AAEE5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB4C1013-D4F0-482F-A4E4-D1A60AAEE5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB4C1013-D4F0-482F-A4E4-D1A60AAEE5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{590DD3A1-820B-49EC-AB41-EAE34530F992}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{590DD3A1-820B-49EC-AB41-EAE34530F992}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{590DD3A1-820B-49EC-AB41-EAE34530F992}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{590DD3A1-820B-49EC-AB41-EAE34530F992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05CF1799-4448-4E01-A1FE-88F8AA3817DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05CF1799-4448-4E01-A1FE-88F8AA3817DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05CF1799-4448-4E01-A1FE-88F8AA3817DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05CF1799-4448-4E01-A1FE-88F8AA3817DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CFE9A62-0EE4-4B66-B6E2-D31E5147FC12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CFE9A62-0EE4-4B66-B6E2-D31E5147FC12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CFE9A62-0EE4-4B66-B6E2-D31E5147FC12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CFE9A62-0EE4-4B66-B6E2-D31E5147FC12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

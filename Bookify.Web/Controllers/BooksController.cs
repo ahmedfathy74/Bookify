@@ -10,7 +10,7 @@ namespace Bookify.Web.Controllers
     public class BooksController : Controller
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly Cloudinary _cloudinary;
         private readonly IImageService _imageService;
@@ -18,7 +18,7 @@ namespace Bookify.Web.Controllers
         private List<string> _allowedExtensions = new() { ".jpg", ".jpeg", ".png" };
         private int _maxAllowedSize = 2097152;
 
-        public BooksController(IWebHostEnvironment webHostEnvironment, ApplicationDbContext context,
+        public BooksController(IWebHostEnvironment webHostEnvironment, IApplicationDbContext context,
             IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
         {
             _webHostEnvironment = webHostEnvironment;
@@ -144,7 +144,7 @@ namespace Bookify.Web.Controllers
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
 
-            _context.Add(book);
+            _context.Books.Add(book);
             _context.SaveChanges();
 
             return RedirectToAction(nameof(Details), new { id = book.Id });

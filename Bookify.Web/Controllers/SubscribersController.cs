@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using Bookify.Domain.Entities;
+using Hangfire;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,7 +9,7 @@ namespace Bookify.Web.Controllers
     [Authorize(Roles = AppRoles.Reception)]
     public class SubscribersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
         private readonly IDataProtector _dataProtector;
         private readonly IMapper _mapper;
         private readonly IWhatsAppClient _whatsAppClient;
@@ -19,7 +20,7 @@ namespace Bookify.Web.Controllers
         private readonly IEmailBodyBuilder _emailBodyBuilder;
         private readonly IEmailSender _emailSender;
 
-        public SubscribersController(ApplicationDbContext context, IDataProtectionProvider dataProtector, IMapper mapper, IImageService imageService, IWhatsAppClient whatsAppClient, IWebHostEnvironment webHostEnvironment, IEmailBodyBuilder emailBodyBuilder, IEmailSender emailSender)
+        public SubscribersController(IApplicationDbContext context, IDataProtectionProvider dataProtector, IMapper mapper, IImageService imageService, IWhatsAppClient whatsAppClient, IWebHostEnvironment webHostEnvironment, IEmailBodyBuilder emailBodyBuilder, IEmailSender emailSender)
         {
             _context = context;
             _dataProtector = dataProtector.CreateProtector("MySecureKeyAhmedFathy");
@@ -115,7 +116,7 @@ namespace Bookify.Web.Controllers
 
             subscriber.Subscriptions.Add(subscription);
 
-            _context.Add(subscriber);
+            _context.Subscribers.Add(subscriber);
             _context.SaveChanges();
 
             // Send Welcome Email
