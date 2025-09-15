@@ -1,4 +1,7 @@
-﻿namespace Bookify.Web.Services
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+
+namespace Bookify.Web.Services
 {
     public class ImageService : IImageService
     {

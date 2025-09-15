@@ -1,6 +1,7 @@
 ﻿using CloudinaryDotNet;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp;
 using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
@@ -237,12 +238,18 @@ namespace Bookify.Web.Controllers
 
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
-
-            if (!model.IsAvailableForRental)
-                foreach (var copy in book.Copies)
-                    copy.IsAvailableForRental = false;
+            //.NET 6
+            //if (!model.IsAvailableForRental)
+            //    foreach (var copy in book.Copies)
+            //        copy.IsAvailableForRental = false;
 
             _context.SaveChanges();
+
+            //.NET 7
+            if (!model.IsAvailableForRental)
+                _context.BookCopies.Where(c => c.BookId == book.Id)
+                    .ExecuteUpdate(p => p.SetProperty(c => c.IsAvailableForRental, false));
+
 
             return RedirectToAction(nameof(Details), new { id = book.Id });
         }
