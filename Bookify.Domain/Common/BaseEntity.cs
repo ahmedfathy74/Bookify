@@ -10,7 +10,7 @@ namespace Bookify.Domain.Common
 
         public ApplicationUser? CreatedBy { get; set; }
 
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public DateTime CreatedOn { get; set; }
 
         public string? LastUpdatedById { get; set; }
 

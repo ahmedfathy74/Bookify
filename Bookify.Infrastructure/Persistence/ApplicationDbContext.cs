@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Bookify.Infrastructure.Persistence.Configurations;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Bookify.Infrastructure.Persistence
 {
@@ -30,15 +32,7 @@ namespace Bookify.Infrastructure.Persistence
             builder.HasSequence<int>("SerialNumber", schema: "shared")
                 .StartsAt(1000001);
 
-            builder.Entity<BookCopy>()
-                .Property(e => e.SerialNumber)
-                .HasDefaultValueSql("NEXT VALUE FOR shared.SerialNumber");
-
-            // generate composite key in many to many relationship table
-            builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });
-            builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId, e.BookCopyId });
-            builder.Entity<Rental>().HasQueryFilter(e => !e.IsDeleted);
-            builder.Entity<RentalCopy>().HasQueryFilter(e => !e.Rental!.IsDeleted);
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             var cascadeFKs = builder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetForeignKeys())
