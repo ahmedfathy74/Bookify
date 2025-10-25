@@ -18,8 +18,11 @@ namespace Bookify.Web.Controllers
         private List<string> _allowedExtensions = new() { ".jpg", ".jpeg", ".png" };
         private int _maxAllowedSize = 2097152;
 
+        private readonly IUnitOfWork _unitOfWork;
+
+
         public BooksController(IWebHostEnvironment webHostEnvironment, IApplicationDbContext context,
-            IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
+            IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService, IUnitOfWork unitOfWork)
         {
             _webHostEnvironment = webHostEnvironment;
             _context = context;
@@ -34,6 +37,7 @@ namespace Bookify.Web.Controllers
 
             _cloudinary = new Cloudinary(account);
             _imageService = imageService;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
@@ -53,21 +57,18 @@ namespace Bookify.Web.Controllers
             var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
             var sortColumnDirection = Request.Form["order[0][dir]"];
 
-            IQueryable<Book> books = _context.Books
-                .Include(b => b.Author)
-                .Include(b => b.Categories)
-                .ThenInclude(c => c.Category);
+            IQueryable<Book> books = _unitOfWork.Books.GetDetails();
 
             if (!string.IsNullOrEmpty(searchValue))
                 books = books.Where(b => b.Title.Contains(searchValue) || b.Author!.Name.Contains(searchValue));
 
-            books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
+            books = books.OrderBy($"{sortColumn} {sortColumnDirection}")
+                         .Skip(skip)
+                         .Take(pageSize);
 
-            var data = books.Skip(skip).Take(pageSize).ToList();
+            var mappedData = _mapper.ProjectTo<BookRowViewModel>(books).ToList();
 
-            var mappedData = _mapper.Map<IEnumerable<BookViewModel>>(data);
-
-            var recordsTotal = books.Count();
+            var recordsTotal = _unitOfWork.Books.Count();
 
             var jsonData = new { recordsFiltered = recordsTotal, recordsTotal, data = mappedData };
 
@@ -76,17 +77,13 @@ namespace Bookify.Web.Controllers
 
         public IActionResult Details(int id)
         {
-            var book = _context.Books
-                .Include(b => b.Author)
-                .Include(b => b.Copies)
-                .Include(b => b.Categories)
-                .ThenInclude(c => c.Category)
+            var query = _unitOfWork.Books.GetDetails();
+
+            var viewModel = _mapper.ProjectTo<BookViewModel>(query)
                 .SingleOrDefault(b => b.Id == id);
 
-            if (book is null)
+            if (viewModel is null)
                 return NotFound();
-
-            var viewModel = _mapper.Map<BookViewModel>(book);
 
             return View(viewModel);
         }

@@ -1,4 +1,5 @@
-﻿using Bookify.Domain.Entities;
+﻿using Bookify.Application.Common.Interfaces.Repositories;
+using Bookify.Domain.Entities;
 
 namespace Bookify.Web.Controllers
 {
@@ -8,16 +9,18 @@ namespace Bookify.Web.Controllers
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public CategoriesController(IApplicationDbContext context, IMapper mapper)
+        private readonly IUnitOfWork _unitOfWork;
+        public CategoriesController(IApplicationDbContext context, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _context = context;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var categories = _context.Categories.AsNoTracking().ToList();
+            var categories = _unitOfWork.Categories.GetAll();
 
             var viewModel = _mapper.Map<IEnumerable<CategoryViewModel>>(categories);
 
@@ -40,8 +43,8 @@ namespace Bookify.Web.Controllers
             var category = _mapper.Map<Category>(model);
             category.CreatedById = User.GetUserId();
 
-            _context.Categories.Add(category);
-            _context.SaveChanges();
+            _unitOfWork.Categories.Add(category);
+            _unitOfWork.Complete();
 
             var viewModel = _mapper.Map<CategoryViewModel>(category);
 

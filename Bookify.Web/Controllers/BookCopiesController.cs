@@ -6,19 +6,19 @@ namespace Bookify.Web.Controllers
     [Authorize(Roles = AppRoles.Archive)]
     public class BookCopiesController : Controller
     {
-        private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public BookCopiesController(IApplicationDbContext context, IMapper mapper)
+        public BookCopiesController(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _context = context;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         [AjaxOnly]
         public IActionResult Create(int bookId)
         {
-            var book = _context.Books.Find(bookId);
+            var book = _unitOfWork.Books.GetById(bookId);
 
             if (book is null)
                 return NotFound();
@@ -38,7 +38,7 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var book = _context.Books.Find(model.BookId);
+            var book = _unitOfWork.Books.GetById(model.BookId);
 
             if (book is null)
                 return NotFound();
@@ -51,7 +51,7 @@ namespace Bookify.Web.Controllers
             };
 
             book.Copies.Add(copy);
-            _context.SaveChanges();
+            _unitOfWork.Complete();
 
             var viewModel = _mapper.Map<BookCopyViewModel>(copy);
 
@@ -61,7 +61,8 @@ namespace Bookify.Web.Controllers
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
-            var copy = _context.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == id);
+            var copy = _unitOfWork.BookCopies.Find(c => c.Id == id, 
+                    includes: c => c.Include(x => x.Book)!);
 
             if (copy is null)
                 return NotFound();
@@ -78,7 +79,8 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var copy = _context.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == model.Id);
+            var copy = _unitOfWork.BookCopies.Find(c => c.Id == model.Id,
+                    includes: c => c.Include(x => x.Book)!);
 
             if (copy is null)
                 return NotFound();
@@ -88,7 +90,7 @@ namespace Bookify.Web.Controllers
             copy.LastUpdatedById = User.GetUserId();
             copy.LastUpdatedOn = DateTime.Now;
 
-            _context.SaveChanges();
+            _unitOfWork.Complete();
 
             var viewModel = _mapper.Map<BookCopyViewModel>(copy);
 
@@ -97,12 +99,16 @@ namespace Bookify.Web.Controllers
 
         public IActionResult RentalHistory(int id)
         {
-            var copyHistory = _context.RentalCopies
-                .Include(c => c.Rental)
-                .ThenInclude(r => r!.Subscriber)
-                .Where(c => c.BookCopyId == id)
-                .OrderByDescending(c => c.RentalDate)
-                .ToList();
+            var copyHistory = _unitOfWork.RentalCopies
+                .FindAll(predicate: c => c.BookCopyId == id,
+                    includes: c => c.Include(x => x.Rental)!.ThenInclude(r => r!.Subscriber)!,
+                    orderBy: c => c.RentalDate,
+                    orderByDirection: OrderBy.Descending);
+                //.Include(c => c.Rental)
+                //.ThenInclude(r => r!.Subscriber)
+                //.Where(c => c.BookCopyId == id)
+                //.OrderByDescending(c => c.RentalDate)
+                //.ToList();
 
             var viewModel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(copyHistory);
 
@@ -112,7 +118,7 @@ namespace Bookify.Web.Controllers
         [HttpPost]
         public IActionResult ToggleStatus(int id)
         {
-            var copy = _context.BookCopies.Find(id);
+            var copy = _unitOfWork.BookCopies.GetById(id);
 
             if (copy is null)
             {
@@ -123,7 +129,7 @@ namespace Bookify.Web.Controllers
             copy.LastUpdatedById = User.GetUserId();
             copy.LastUpdatedOn = DateTime.UtcNow;
 
-            _context.SaveChanges();
+            _unitOfWork.Complete();
 
             return Ok();
         }

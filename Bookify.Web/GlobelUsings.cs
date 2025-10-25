@@ -3,6 +3,7 @@ global using Bookify.Domain.Consts;
 global using Bookify.Domain.Common;
 global using Bookify.Domain.Enums;
 global using Bookify.Domain.Entities;
+global using Bookify.Application.Services;
 global using Bookify.Application.Common.Models;
 global using Bookify.Application.Common.Interfaces;
 global using Bookify.Infrastructure.Persistence;

@@ -1,5 +1,6 @@
-﻿using Bookify.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+﻿using Bookify.Application.Common.Interfaces.Repositories;
+using Bookify.Infrastructure.Persistence;
+using Bookify.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ namespace Bookify.Infrastructure
                 builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

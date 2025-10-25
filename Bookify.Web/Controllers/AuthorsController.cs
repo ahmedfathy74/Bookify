@@ -1,24 +1,28 @@
 ﻿
+using Bookify.Application.Common.Interfaces.Repositories;
+using Bookify.Application.Services;
 using Bookify.Domain.Entities;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace Bookify.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
     public class AuthorsController : Controller
     {
-        private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        //private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuthorService _authorService;
 
-        public AuthorsController(IApplicationDbContext context, IMapper mapper)
+        public AuthorsController(IMapper mapper, IAuthorService authorService)
         {
-            _context = context;
             _mapper = mapper;
+            _authorService = authorService;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var authors = _context.Authors.AsNoTracking().ToList();
+            var authors = _authorService.GetAll();
 
             var viewModel = _mapper.Map<IEnumerable<AuthorViewModel>>(authors);
 
@@ -38,11 +42,7 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var author = _mapper.Map<Author>(model);
-            author.CreatedById = User.GetUserId();
-
-            _context.Authors.Add(author);
-            _context.SaveChanges();
+            var author = _authorService.Add(model.Name, User.GetUserId());
 
             var viewModel = _mapper.Map<AuthorViewModel>(author);
 
@@ -53,7 +53,7 @@ namespace Bookify.Web.Controllers
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
-            var author = _context.Authors.Find(id);
+            var author = _authorService.GetById(id);
 
             if (author is null)
                 return NotFound();
@@ -69,16 +69,10 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var author = _context.Authors.Find(model.Id);
+            var author = _authorService.Update(model.Id, model.Name ,User.GetUserId());
 
             if (author is null)
                 return NotFound();
-
-            author = _mapper.Map(model, author);
-            author.LastUpdatedById = User.GetUserId();
-            author.LastUpdatedOn = DateTime.Now;
-
-            _context.SaveChanges();
 
             var viewModel = _mapper.Map<AuthorViewModel>(author);
 
@@ -88,26 +82,17 @@ namespace Bookify.Web.Controllers
         [HttpPost]
         public IActionResult ToggleStatus(int id)
         {
-            var author = _context.Authors.Find(id);
+            var author = _authorService.ToggleStatus(id, User.GetUserId());
 
             if (author is null)
                 return NotFound();
-
-            author.IsDeleted = !author.IsDeleted;
-            author.LastUpdatedById = User.GetUserId();
-            author.LastUpdatedOn = DateTime.Now;
-
-            _context.SaveChanges();
 
             return Ok(author.LastUpdatedOn.ToString());
         }
 
         public IActionResult AllowItem(AuthorFormViewModel model)
         {
-            var author = _context.Authors.SingleOrDefault(c => c.Name == model.Name);
-            var isAllowed = author is null || author.Id.Equals(model.Id);
-
-            return Json(isAllowed);
+            return Json(_authorService.AllowAuthor(model.Id, model.Name));
         }
 
     }

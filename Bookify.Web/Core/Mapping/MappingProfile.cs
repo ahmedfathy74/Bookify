@@ -1,4 +1,5 @@
-﻿using Bookify.Domain.Entities;
+﻿using Bookify.Domain.Dtos;
+using Bookify.Domain.Entities;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Bookify.Web.Core.Mapping
@@ -31,6 +32,9 @@ namespace Bookify.Web.Core.Mapping
                  .ForMember(dest => dest.Categories,
                      opt => opt.MapFrom(src => src.Categories.Select(c => c.Category!.Name).ToList()));
 
+            CreateMap<Book, BookRowViewModel>()
+                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author!.Name));
+
             CreateMap<BookCopy, BookCopyViewModel>()
                  .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book!.Title))
                  .ForMember(dest => dest.BookId, opt => opt.MapFrom(src => src.Book!.Id))
@@ -44,6 +48,8 @@ namespace Bookify.Web.Core.Mapping
                .ForMember(dest => dest.NormalizedEmail, opt => opt.MapFrom(src => src.Email.ToUpper()))
                .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => src.UserName.ToUpper()))
                .ReverseMap();
+
+            CreateMap<UserFormViewModel, CreateUserDto>();
 
             //Governorates & Areas
             CreateMap<Governorate, SelectListItem>()

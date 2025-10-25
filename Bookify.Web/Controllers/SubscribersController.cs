@@ -1,4 +1,5 @@
-﻿using Bookify.Domain.Entities;
+﻿using Bookify.Application.Services;
+using Bookify.Domain.Entities;
 using Hangfire;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -14,13 +15,14 @@ namespace Bookify.Web.Controllers
         private readonly IMapper _mapper;
         private readonly IWhatsAppClient _whatsAppClient;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IAreaService _areaService;
 
 
         private readonly IImageService _imageService;
         private readonly IEmailBodyBuilder _emailBodyBuilder;
         private readonly IEmailSender _emailSender;
 
-        public SubscribersController(IApplicationDbContext context, IDataProtectionProvider dataProtector, IMapper mapper, IImageService imageService, IWhatsAppClient whatsAppClient, IWebHostEnvironment webHostEnvironment, IEmailBodyBuilder emailBodyBuilder, IEmailSender emailSender)
+        public SubscribersController(IApplicationDbContext context, IDataProtectionProvider dataProtector, IMapper mapper, IImageService imageService, IWhatsAppClient whatsAppClient, IWebHostEnvironment webHostEnvironment, IEmailBodyBuilder emailBodyBuilder, IEmailSender emailSender, IAreaService areaService)
         {
             _context = context;
             _dataProtector = dataProtector.CreateProtector("MySecureKeyAhmedFathy");
@@ -30,6 +32,7 @@ namespace Bookify.Web.Controllers
             _webHostEnvironment = webHostEnvironment;
             _emailBodyBuilder = emailBodyBuilder;
             _emailSender = emailSender;
+            _areaService = areaService;
         }
 
         public IActionResult Index()
@@ -306,10 +309,7 @@ namespace Bookify.Web.Controllers
         [AjaxOnly]
         public IActionResult GetAreas(int governorateId)
         {
-            var areas = _context.Areas
-                .Where(a => a.GovernorateId == governorateId && !a.IsDeleted)
-                .OrderBy(a => a.Name)
-                .ToList();
+            var areas = _areaService.GetActiveAreasByGovernorateId(governorateId);
 
             return Ok(_mapper.Map<IEnumerable<SelectListItem>>(areas));
         }
@@ -358,10 +358,7 @@ namespace Bookify.Web.Controllers
 
             if (model?.GovernorateId > 0)
             {
-                var areas = _context.Areas
-                    .Where(a => a.GovernorateId == model.GovernorateId && !a.IsDeleted)
-                    .OrderBy(a => a.Name)
-                    .ToList();
+                var areas = _areaService.GetActiveAreasByGovernorateId(model.GovernorateId);
 
                 viewModel.Areas = _mapper.Map<IEnumerable<SelectListItem>>(areas);
             }
